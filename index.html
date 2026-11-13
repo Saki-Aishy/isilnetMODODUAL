@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ISILNET - Mi Horario (Modelo Editable)</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F6F9;
+            color: #1F2937;
+        }
+
+        /* Colores personalizados exactos de ISILNET */
+        .bg-isil-cyan { background-color: #00AEEF; }
+        .text-isil-cyan { color: #00AEEF; }
+        .border-isil-cyan { border-color: #00AEEF; }
+        .bg-isil-studio { background-color: #18365A; }
+        .bg-isil-jobs { background-color: #FDD2A8; }
+        .border-isil-jobs { border-color: #F3A258; }
+
+        /* Scrollbar sutil para la tabla en pantallas medianas/pequeñas */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F1F5F9;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #CBD5E1;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94A3B8;
+        }
+
+        /* Estilo de celdas interactivas */
+        .schedule-cell {
+            transition: background-color 0.15s ease;
+        }
+        .schedule-cell:hover .add-hint {
+            opacity: 1;
+        }
+
+        /* Estilos de impresión limpios */
+        @media print {
+            .no-print { display: none !important; }
+            body { background-color: white !important; }
+            .print-full { width: 100% !important; margin: 0 !important; padding: 0 !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col md:flex-row antialiased selection:bg-[#00AEEF] selection:text-white">
+
+    <!-- ==================== 1. BARRA LATERAL IZQUIERDA (SIDEBAR) ==================== -->
+    <aside class="w-full md:w-[88px] bg-white border-b md:border-b-0 md:border-r border-gray-200 flex md:flex-col justify-between items-center shrink-0 z-20 no-print md:h-screen md:sticky md:top-0">
+        
+        <!-- Top: Logo ISILNET + Flecha -->
+        <div class="flex md:flex-col items-center w-auto md:w-full">
+            <div class="w-20 md:w-full h-16 md:h-[76px] bg-isil-cyan flex items-center justify-center text-white font-extrabold tracking-wide text-sm md:text-[15px] select-none cursor-pointer">
+                ISILNET
+            </div>
+            <!-- Botón flecha pequeña hacia arriba debajo del logo -->
+            <button title="Contraer menú" class="hidden md:flex -mt-2.5 w-5 h-5 rounded-full bg-white border border-gray-200 shadow-sm items-center justify-center text-gray-500 hover:text-gray-800 transition">
+                <i data-lucide="chevron-up" class="w-3 h-3"></i>
+            </button>
+        </div>
+
+        <!-- Middle: Navegación Principal -->
+        <nav class="flex md:flex-col items-center gap-1 md:gap-4 px-2 py-2 md:py-4 overflow-x-auto w-full justify-around md:justify-start">
+            
+            <!-- Información Académica -->
+            <a href="#" onclick="event.preventDefault()" class="group flex flex-col items-center justify-center text-center px-1.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 transition w-16 md:w-full">
+                <i data-lucide="graduation-cap" class="w-5 h-5 mb-1 stroke-[1.75]"></i>
+                <span class="text-[10px] leading-tight font-medium">Información Académica</span>
+            </a>
+
+            <!-- Horario (ACTIVO) -->
+            <a href="#" onclick="event.preventDefault()" class="group flex flex-col items-center justify-center text-center px-1.5 py-1.5 rounded-lg text-isil-cyan transition w-16 md:w-full">
+                <i data-lucide="clock" class="w-5 h-5 mb-1 stroke-[2]"></i>
+                <span class="text-[10px] leading-tight font-semibold">Horario</span>
+            </a>
+
+            <!-- Agenda -->
+            <a href="#" onclick="event.preventDefault()" class="group flex flex-col items-center justify-center text-center px-1.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 transition w-16 md:w-full">
+                <i data-lucide="calendar-days" class="w-5 h-5 mb-1 stroke-[1.75]"></i>
+                <span class="text-[10px] leading-tight font-medium">Agenda</span>
+            </a>
+
+            <!-- Finanzas -->
+            <a href="#" onclick="event.preventDefault()" class="group flex flex-col items-center justify-center text-center px-1.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 transition w-16 md:w-full">
+                <i data-lucide="wallet" class="w-5 h-5 mb-1 stroke-[1.75]"></i>
+                <span class="text-[10px] leading-tight font-medium">Finanzas</span>
+            </a>
+
+            <!-- Trámites -->
+            <a href="#" onclick="event.preventDefault()" class="group flex flex-col items-center justify-center text-center px-1.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 transition w-16 md:w-full">
+                <i data-lucide="file-text" class="w-5 h-5 mb-1 stroke-[1.75]"></i>
+                <span class="text-[10px] leading-tight font-medium">Trámites</span>
+            </a>
+
+            <!-- Directorio ISIL -->
+            <a href="#" onclick="event.preventDefault()" class="group flex flex-col items-center justify-center text-center px-1.5 py-1.5 rounded-lg text-gray-500 hover:text-gray-800 transition w-16 md:w-full">
+                <i data-lucide="contact" class="w-5 h-5 mb-1 stroke-[1.75]"></i>
+                <span class="text-[10px] leading-tight font-medium">Directorio ISIL</span>
+                <i data-lucide="chevron-down" class="w-3 h-3 mt-0.5 text-gray-400"></i>
+            </a>
+        </nav>
+
+        <!-- Bottom: Cerrar sesión y Selector Idioma ES | EN -->
+        <div class="hidden md:flex flex-col items-center w-full pb-3 pt-2 border-t border-gray-100 gap-3">
+            <button onclick="showToast('Sesión de demostración activa')" class="flex flex-col items-center text-gray-600 hover:text-red-600 transition px-2 py-1">
+                <i data-lucide="log-out" class="w-4 h-4 mb-1"></i>
+                <span class="text-[10px] font-medium">Cerrar sesión</span>
+            </button>
+
+            <div class="flex items-center justify-center gap-1 text-[10px] font-bold pt-1 border-t border-gray-100 w-full px-1">
+                <i data-lucide="languages" class="w-3.5 h-3.5 text-gray-400 mr-0.5"></i>
+                <button id="lang-es" onclick="setLang('ES')" class="px-1.5 py-0.5 rounded bg-black text-white transition">ES</button>
+                <button id="lang-en" onclick="setLang('EN')" class="px-1.5 py-0.5 rounded text-gray-600 hover:bg-gray-100 transition">EN</button>
+            </div>
+        </div>
+    </aside>
+
+    <!-- ==================== 2. CONTENIDO PRINCIPAL ==================== -->
+    <main class="flex-1 bg-[#F4F6F9] p-4 sm:p-6 lg:px-8 lg:py-6 overflow-y-auto print-full min-w-0">
+        <div class="max-w-[1360px] mx-auto space-y-5">
+
+            <!-- ENCABEZADO SUPERIOR -->
+            <header class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2.5">
+                        <h1 id="page-title" contenteditable="true" title="Haz clic para editar el título" class="text-2xl sm:text-[26px] font-extrabold text-gray-900 tracking-tight outline-none focus:ring-2 focus:ring-[#00AEEF]/40 rounded px-1 -ml-1">
+                            Mi Horario
+                        </h1>
+                        <span id="period-badge" contenteditable="true" title="Haz clic para editar el periodo" class="px-2.5 py-0.5 text-xs font-semibold text-[#00AEEF] bg-[#E0F5FE] rounded-md outline-none focus:ring-2 focus:ring-[#00AEEF]/40">
+                            Periodo 2026-2
+                        </span>
+                    </div>
+                    <p id="page-subtitle" contenteditable="true" title="Haz clic para editar el subtítulo" class="text-xs sm:text-[13px] text-gray-500 mt-0.5 outline-none focus:ring-2 focus:ring-[#00AEEF]/40 rounded px-1 -ml-1">
+                        Horario fijo del periodo — se repite cada semana
+                    </p>
+                </div>
+
+                <!-- Controles derecha: Selector Periodo + Botón Imprimir -->
+                <div class="flex items-center gap-2.5 no-print">
+                    <div class="relative">
+                        <select id="period-select" class="appearance-none bg-white border border-gray-200 text-gray-600 text-xs sm:text-[13px] font-medium rounded-lg pl-3.5 pr-9 py-2 shadow-xs hover:border-gray-300 focus:outline-none focus:border-[#00AEEF] cursor-pointer">
+                            <option value="2026-2">Periodo 2026-2 - actual</option>
+                            <option value="2026-1">Periodo 2026-1 - anterior</option>
+                            <option value="2027-0">Periodo 2027-0 - verano</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                    </div>
+
+                    <button onclick="window.print()" class="inline-flex items-center gap-2 bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 text-xs sm:text-[13px] font-medium px-3.5 py-2 rounded-lg shadow-xs transition cursor-pointer">
+                        <i data-lucide="printer" class="w-4 h-4 text-[#00AEEF]"></i>
+                        <span>Imprimir</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- ==================== 3. CONTENEDOR PRINCIPAL BLANCO ==================== -->
+            <section class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-4 sm:p-5 flex flex-col lg:flex-row gap-5">
+                
+                <!-- Sub-menú lateral izquierdo interno (3 tarjetas) -->
+                <div class="w-full lg:w-[165px] shrink-0 flex flex-row lg:flex-col gap-2.5 no-print">
+                    <button onclick="selectSubTab(this, 'Horario')" class="subtab-btn flex-1 lg:flex-none flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-gray-200/90 shadow-2xs text-gray-700 hover:border-gray-300 text-xs font-medium text-left transition cursor-pointer">
+                        <i data-lucide="file-spreadsheet" class="w-4 h-4 text-gray-500 shrink-0"></i>
+                        <span>Horario</span>
+                    </button>
+
+                    <button onclick="selectSubTab(this, 'Modo Dual')" class="subtab-btn active flex-1 lg:flex-none flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-[#00AEEF]/40 shadow-sm text-[#00AEEF] text-xs font-semibold text-left transition cursor-pointer">
+                        <i data-lucide="layout-grid" class="w-4 h-4 text-[#00AEEF] shrink-0"></i>
+                        <span>Modo Dual</span>
+                    </button>
+
+                    <button onclick="selectSubTab(this, 'Justificaciones Exprés')" class="subtab-btn flex-1 lg:flex-none flex items-center gap-2.5 px-3.5 py-3 rounded-xl bg-white border border-gray-200/90 shadow-2xs text-gray-700 hover:border-gray-300 text-xs font-medium text-left transition cursor-pointer">
+                        <i data-lucide="file-check-2" class="w-4 h-4 text-gray-500 shrink-0"></i>
+                        <span class="leading-tight">Justificaciones Exprés</span>
+                    </button>
+                </div>
+
+                <!-- Área derecha del contenedor: Barra de controles + Cuadrícula vacía -->
+                <div class="flex-1 min-w-0 flex flex-col gap-4">
+                    
+                    <!-- Barra de controles superior (Toggles + Botón OCR + Herramientas discretas) -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 no-print">
+                        
+                        <!-- Toggles tipo píldora -->
+                        <div class="flex flex-wrap items-center gap-2.5">
+                            <!-- Toggle 1: Studio (ISIL Academic) -->
+                            <div onclick="toggleLayer('studio')" id="pill-studio" class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border-[1.5px] border-[#18365A] bg-white cursor-pointer select-none transition">
+                                <div id="switch-studio" class="w-8 h-4.5 bg-[#00AEEF] rounded-full relative transition-colors flex items-center px-0.5">
+                                    <div id="knob-studio" class="w-3.5 h-3.5 bg-white rounded-full shadow-xs transform translate-x-3.5 transition-transform"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-800">Studio (ISIL Academic)</span>
+                            </div>
+
+                            <!-- Toggle 2: Jobs (Work Schedule) -->
+                            <div onclick="toggleLayer('jobs')" id="pill-jobs" class="flex items-center gap-2.5 px-3 py-1.5 rounded-xl border-[1.5px] border-[#F3A258] bg-white cursor-pointer select-none transition">
+                                <div id="switch-jobs" class="w-8 h-4.5 bg-[#00AEEF] rounded-full relative transition-colors flex items-center px-0.5">
+                                    <div id="knob-jobs" class="w-3.5 h-3.5 bg-white rounded-full shadow-xs transform translate-x-3.5 transition-transform"></div>
+                                </div>
+                                <span class="text-xs font-semibold text-gray-800">Jobs (Work Schedule)</span>
+                            </div>
+                        </div>
+
+                        <!-- Botones derecha: Limpiar discreto + Integrar Calendario Externo -->
+                        <div class="flex items-center gap-2">
+                            <button onclick="openModal()" class="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-dashed border-[#00AEEF] text-[#00AEEF] hover:bg-[#00AEEF]/5 text-xs font-semibold transition cursor-pointer" title="Agregar nuevo bloque al horario">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                <span>Agregar bloque</span>
+                            </button>
+
+                            <button id="btn-clear" onclick="clearAllBlocks()" class="hidden inline-flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 text-gray-500 hover:text-red-600 hover:border-red-200 hover:bg-red-50/50 text-xs font-medium transition cursor-pointer" title="Vaciar todos los bloques de la cuadrícula">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                <span>Limpiar todo</span>
+                            </button>
+
+                            <button onclick="openOcrModal()" class="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl border border-gray-300 bg-white hover:bg-gray-50 text-gray-700 text-xs font-semibold shadow-2xs transition cursor-pointer">
+                                <i data-lucide="calendar-plus" class="w-4 h-4 text-gray-600"></i>
+                                <span>Integrar Calendario Externo (Scan OCR)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- ==================== VISTA 1: MODO DUAL (CUADRÍCULA PRINCIPAL) ==================== -->
+                    <div id="view-modo-dual" class="space-y-3">
+                        <div class="w-full overflow-x-auto rounded-xl border border-[#E5E7EB]">
+                            <table class="w-full min-w-[760px] border-collapse table-fixed">
+                                <thead>
+                                    <tr class="bg-[#FAFAFB] border-b border-[#E5E7EB] text-gray-700 text-xs font-bold">
+                                        <th class="w-16 py-2.5 px-2 border-r border-[#E5E7EB] text-center font-medium text-gray-400 select-none"></th>
+                                        <th class="py-2.5 px-2 border-r border-[#E5E7EB] text-center"><span contenteditable="true" onblur="saveCustomTexts()" id="day-header-0" class="outline-none focus:bg-[#00AEEF]/10 rounded px-1">Lun</span></th>
+                                        <th class="py-2.5 px-2 border-r border-[#E5E7EB] text-center"><span contenteditable="true" onblur="saveCustomTexts()" id="day-header-1" class="outline-none focus:bg-[#00AEEF]/10 rounded px-1">Mar</span></th>
+                                        <th class="py-2.5 px-2 border-r border-[#E5E7EB] text-center"><span contenteditable="true" onblur="saveCustomTexts()" id="day-header-2" class="outline-none focus:bg-[#00AEEF]/10 rounded px-1">Mié</span></th>
+                                        <th class="py-2.5 px-2 border-r border-[#E5E7EB] text-center"><span contenteditable="true" onblur="saveCustomTexts()" id="day-header-3" class="outline-none focus:bg-[#00AEEF]/10 rounded px-1">Jue</span></th>
+                                        <th class="py-2.5 px-2 border-r border-[#E5E7EB] text-center"><span contenteditable="true" onblur="saveCustomTexts()" id="day-header-4" class="outline-none focus:bg-[#00AEEF]/10 rounded px-1">Vie</span></th>
+                                        <th class="py-2.5 px-2 text-center"><span contenteditable="true" onblur="saveCustomTexts()" id="day-header-5" class="outline-none focus:bg-[#00AEEF]/10 rounded px-1">Sáb</span></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="schedule-body" class="divide-y divide-[#E5E7EB] bg-white">
+                                    <!-- Filas generadas dinámicamente -->
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Pie de tabla con ayuda, carga de ejemplo y contador -->
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-400 px-1 no-print">
+                            <span>Haz clic en cualquier celda vacía para agregar un bloque de Studio, Jobs o Examen.</span>
+                            <div class="flex items-center gap-3">
+                                <button onclick="loadDemoScenario()" class="text-[#00AEEF] hover:underline font-medium cursor-pointer">Cargar ejemplo con cruce</button>
+                                <span id="block-counter" class="font-medium text-gray-500">0 bloques activos</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== VISTA 2: HORARIO (RESUMEN ACADÉMICO Y CARGA SEMANAL) ==================== -->
+                    <div id="view-horario" class="hidden space-y-5">
+                        <!-- Tarjetas métricas superiores -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5">
+                            <div class="p-4 rounded-xl border border-gray-200/90 bg-[#FAFAFB] flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Carga Studio (ISIL)</span>
+                                    <span class="w-7 h-7 rounded-lg bg-[#18365A]/10 text-[#18365A] flex items-center justify-center">
+                                        <i data-lucide="book-open" class="w-4 h-4"></i>
+                                    </span>
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span id="stat-studio-hours" class="text-2xl font-extrabold text-[#18365A]">0h</span>
+                                    <span id="stat-studio-count" class="text-xs text-gray-500">0 sesiones/sem</span>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-xl border border-gray-200/90 bg-[#FAFAFB] flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Carga Jobs (Trabajo)</span>
+                                    <span class="w-7 h-7 rounded-lg bg-[#FDD2A8]/50 text-[#B45309] flex items-center justify-center">
+                                        <i data-lucide="briefcase" class="w-4 h-4"></i>
+                                    </span>
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span id="stat-jobs-hours" class="text-2xl font-extrabold text-gray-900">0h</span>
+                                    <span id="stat-jobs-count" class="text-xs text-gray-500">0 turnos/sem</span>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-xl border border-gray-200/90 bg-[#FAFAFB] flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Cruces Detectados</span>
+                                    <span class="w-7 h-7 rounded-lg bg-red-50 text-[#D32F2F] flex items-center justify-center">
+                                        <i data-lucide="alert-triangle" class="w-4 h-4"></i>
+                                    </span>
+                                </div>
+                                <div class="mt-2 flex items-baseline gap-2">
+                                    <span id="stat-conflicts" class="text-2xl font-extrabold text-[#D32F2F]">0</span>
+                                    <span class="text-xs text-gray-500">alertas activas</span>
+                                </div>
+                            </div>
+
+                            <div class="p-4 rounded-xl border border-gray-200/90 bg-[#FAFAFB] flex flex-col justify-between">
+                                <div class="flex items-center justify-between">
+                                    <span class="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Progreso Periodo</span>
+                                    <span class="text-xs font-bold text-[#00AEEF]" id="stat-progress-label">Sem. 12 / 16</span>
+                                </div>
+                                <div class="mt-3">
+                                    <div class="w-full h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <div id="stat-progress-bar" class="h-full bg-[#00AEEF] rounded-full transition-all" style="width: 75%"></div>
+                                    </div>
+                                    <div class="flex justify-between text-[10px] text-gray-500 mt-1.5">
+                                        <span>Asistencia: <strong class="text-gray-700">94%</strong></span>
+                                        <span>Créditos: <strong class="text-gray-700" id="stat-credits">0</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dos columnas: Cursos Matriculados + Próximos Exámenes -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                            <!-- Lista de cursos registrados -->
+                            <div class="lg:col-span-2 rounded-xl border border-gray-200 p-4 space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h3 class="text-sm font-bold text-gray-900">Cursos Matriculados — Periodo 2026-2</h3>
+                                        <p class="text-[11px] text-gray-500">Sincronizado automáticamente con tus bloques de Studio en Modo Dual</p>
+                                    </div>
+                                    <button onclick="openModal(0, '09:00', null, 'studio')" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#18365A] text-white text-xs font-semibold hover:brightness-110 transition cursor-pointer">
+                                        <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                        <span>Añadir curso</span>
+                                    </button>
+                                </div>
+
+                                <div id="enrolled-courses-list" class="divide-y divide-gray-100">
+                                    <!-- Renderizado dinámico -->
+                                </div>
+                            </div>
+
+                            <!-- Tarjeta de Próximos Exámenes ('Días para examen') -->
+                            <div class="rounded-xl border border-gray-200 p-4 flex flex-col justify-between bg-[#FAFAFB]/60 space-y-3">
+                                <div>
+                                    <div class="flex items-center justify-between mb-3">
+                                        <div>
+                                            <h3 class="text-sm font-bold text-gray-900">Próximos Exámenes</h3>
+                                            <p class="text-[11px] text-gray-500">Recordatorios y cuenta regresiva</p>
+                                        </div>
+                                        <button onclick="openExamModal()" class="p-1.5 rounded-lg bg-[#00AEEF]/10 text-[#00AEEF] hover:bg-[#00AEEF]/20 transition cursor-pointer" title="Agregar recordatorio de examen">
+                                            <i data-lucide="calendar-plus" class="w-4 h-4"></i>
+                                        </button>
+                                    </div>
+
+                                    <div id="exams-list" class="space-y-2.5">
+                                        <!-- Renderizado dinámico de exámenes -->
+                                    </div>
+                                </div>
+
+                                <div class="pt-3 border-t border-gray-200/80 flex items-center justify-between gap-2">
+                                    <button onclick="loadDemoScenario()" class="text-[11px] font-semibold text-[#00AEEF] hover:underline cursor-pointer">
+                                        Cargar horario ejemplo
+                                    </button>
+                                    <button onclick="resetAllData()" class="text-[11px] font-medium text-gray-400 hover:text-red-600 transition cursor-pointer">
+                                        Restaurar todo vacío
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ==================== VISTA 3: JUSTIFICACIONES EXPRÉS ==================== -->
+                    <div id="view-justificaciones" class="hidden space-y-5">
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+                            
+                            <!-- Columna izquierda: Formulario de Solicitud (7 cols) -->
+                            <div class="lg:col-span-7 rounded-xl border border-gray-200 p-4 sm:p-5 space-y-4 bg-white">
+                                <div class="flex items-start justify-between gap-2 border-b border-gray-100 pb-3">
+                                    <div>
+                                        <div class="flex items-center gap-2">
+                                            <span class="px-2 py-0.5 rounded-md bg-[#E0F5FE] text-[#00AEEF] text-[10px] font-bold uppercase tracking-wide">Trámite Digital</span>
+                                            <h3 class="text-sm font-bold text-gray-900">Nueva Justificación Exprés</h3>
+                                        </div>
+                                        <p class="text-xs text-gray-500 mt-0.5">Resolución automática para estudiantes en modalidad Studio + Jobs</p>
+                                    </div>
+                                    <button onclick="switchSubTab('Modo Dual')" class="text-xs text-[#00AEEF] hover:underline font-medium shrink-0 cursor-pointer">
+                                        Ver en cuadrícula →
+                                    </button>
+                                </div>
+
+                                <form id="just-form" onsubmit="submitJustification(event)" class="space-y-3.5">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">Curso afectado (Studio)</label>
+                                            <select id="just-course" required class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-[#00AEEF]" onchange="updateJustificationPreview()">
+                                                <!-- Opciones dinámicas desde bloques de Studio -->
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">Día y franja del cruce</label>
+                                            <input type="text" id="just-datetime" required placeholder="Ej. Miércoles — 14:00 a 16:00" oninput="updateJustificationPreview()" class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#00AEEF]">
+                                        </div>
+                                    </div>
+
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">Motivo de la justificación</label>
+                                            <select id="just-reason" onchange="updateJustificationPreview()" class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-[#00AEEF]">
+                                                <option value="Cruce de turno laboral certificado">Cruce de turno laboral certificado</option>
+                                                <option value="Emergencia médica / Atención salud">Emergencia médica / Atención salud</option>
+                                                <option value="Comisión laboral extraordinaria">Comisión laboral extraordinaria</option>
+                                                <option value="Otro motivo documentado">Otro motivo documentado</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="block text-xs font-semibold text-gray-700 mb-1">Sustento / Constancia adjunta</label>
+                                            <label class="flex items-center justify-between gap-2 w-full text-xs border border-dashed border-gray-300 hover:border-[#00AEEF] rounded-xl px-3 py-1.5 bg-gray-50/70 cursor-pointer transition">
+                                                <span id="just-file-label" class="text-gray-500 truncate">Seleccionar PDF / JPG...</span>
+                                                <span class="px-2 py-0.5 rounded bg-white border border-gray-200 text-[10px] font-semibold text-gray-700 shrink-0">Subir</span>
+                                                <input type="file" id="just-file" class="hidden" accept=".pdf,.png,.jpg,.jpeg" onchange="handleJustificationFile(this)">
+                                            </label>
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <label class="block text-xs font-semibold text-gray-700 mb-1">Detalle breve del cruce horario</label>
+                                        <textarea id="just-notes" rows="2" oninput="updateJustificationPreview()" placeholder="Describe brevemente el turno laboral o motivo de inasistencia..." class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#00AEEF]"></textarea>
+                                    </div>
+
+                                    <div class="flex flex-wrap items-center justify-end gap-2 pt-1">
+                                        <button type="button" onclick="saveJustificationDraft()" class="px-3.5 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition cursor-pointer">
+                                            Guardar borrador
+                                        </button>
+                                        <button type="submit" class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#00AEEF] hover:bg-[#0096CE] text-white text-xs font-semibold shadow-xs transition cursor-pointer">
+                                            <i data-lucide="send" class="w-3.5 h-3.5"></i>
+                                            <span>Enviar Justificación Exprés</span>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+
+                            <!-- Columna derecha: Vista previa oficial instantánea (5 cols) -->
+                            <div class="lg:col-span-5 rounded-xl border border-gray-200 bg-[#FAFAFB] p-4 flex flex-col justify-between">
+                                <div>
+                                    <div class="flex items-center justify-between mb-2.5">
+                                        <span class="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Vista Previa del Cargo Oficial</span>
+                                        <button onclick="window.print()" class="text-[11px] font-semibold text-[#00AEEF] hover:underline inline-flex items-center gap-1 cursor-pointer">
+                                            <i data-lucide="printer" class="w-3 h-3"></i>
+                                            <span>Imprimir cargo</span>
+                                        </button>
+                                    </div>
+
+                                    <!-- Hoja tipo documento oficial ISIL -->
+                                    <div class="bg-white border border-gray-200 rounded-xl p-4 shadow-2xs space-y-2.5 text-xs">
+                                        <div class="flex items-center justify-between border-b border-gray-100 pb-2">
+                                            <div class="flex items-center gap-2">
+                                                <span class="px-2 py-0.5 bg-[#00AEEF] text-white font-extrabold text-[10px] rounded">ISILNET</span>
+                                                <span class="font-bold text-gray-800 text-[11px]">CONSTANCIA EXPRÉS</span>
+                                            </div>
+                                            <span id="prev-code" class="text-[10px] font-mono text-gray-400">#JE-2026-001</span>
+                                        </div>
+
+                                        <div class="space-y-1.5 text-[11px]">
+                                            <div class="flex justify-between">
+                                                <span class="text-gray-400">Periodo:</span>
+                                                <span class="font-semibold text-gray-800">2026-2 (Modo Dual)</span>
+                                            </div>
+                                            <div class="flex justify-between gap-2">
+                                                <span class="text-gray-400 shrink-0">Curso:</span>
+                                                <span id="prev-course" class="font-semibold text-[#18365A] text-right truncate">Sin curso seleccionado</span>
+                                            </div>
+                                            <div class="flex justify-between gap-2">
+                                                <span class="text-gray-400 shrink-0">Franja:</span>
+                                                <span id="prev-datetime" class="font-medium text-gray-700 text-right">—</span>
+                                            </div>
+                                            <div class="flex justify-between gap-2">
+                                                <span class="text-gray-400 shrink-0">Motivo:</span>
+                                                <span id="prev-reason" class="font-medium text-gray-700 text-right">Cruce de turno laboral certificado</span>
+                                            </div>
+                                            <div class="flex justify-between gap-2">
+                                                <span class="text-gray-400 shrink-0">Adjunto:</span>
+                                                <span id="prev-file" class="font-medium text-[#00AEEF] text-right truncate">Pendiente de archivo</span>
+                                            </div>
+                                        </div>
+
+                                        <div class="pt-2 border-t border-dashed border-gray-200">
+                                            <p id="prev-notes" class="text-[10px] text-gray-500 italic line-clamp-2">El detalle ingresado aparecerá aquí como respaldo de tu solicitud...</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <p class="text-[10px] text-gray-400 mt-3">
+                                    Las solicitudes por cruce laboral verificado con bloques <strong>Jobs</strong> activos reciben aprobación automática inmediata.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Historial de Justificaciones -->
+                        <div class="rounded-xl border border-gray-200 p-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <h3 class="text-sm font-bold text-gray-900">Historial de Justificaciones Exprés</h3>
+                                <span id="just-history-count" class="text-xs text-gray-500">0 solicitudes</span>
+                            </div>
+                            <div id="just-history-list" class="divide-y divide-gray-100">
+                                <!-- Renderizado dinámico -->
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- ==================== 4. SECCIÓN INFERIOR: PANEL DE BIENESTAR ==================== -->
+            <section class="bg-white rounded-2xl border border-gray-200/80 shadow-xs p-5">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h2 contenteditable="true" onblur="saveCustomTexts()" id="wellness-title" class="text-[15px] font-bold text-gray-900 outline-none focus:ring-2 focus:ring-[#00AEEF]/40 rounded px-1 -ml-1">
+                                Panel de Bienestar: Energía y Sueño
+                            </h2>
+                            <button onclick="openWellnessModal()" class="text-[11px] font-semibold text-[#00AEEF] hover:underline no-print cursor-pointer">
+                                Editar registro
+                            </button>
+                        </div>
+                        <p contenteditable="true" onblur="saveCustomTexts()" id="wellness-subtitle" class="text-xs text-gray-500 mt-0.5 outline-none focus:ring-2 focus:ring-[#00AEEF]/40 rounded px-1 -ml-1">
+                            Cartas de sueño en optimizados
+                        </p>
+                    </div>
+
+                    <!-- Área de gráfico interactivo con leyenda a la derecha -->
+                    <div class="flex flex-col items-end justify-center min-w-[260px]">
+                        <div class="flex items-center gap-3 text-[11px] font-medium text-gray-600 mb-1.5">
+                            <span class="inline-flex items-center gap-1.5">
+                                <span class="w-2.5 h-2.5 rounded-[2px] bg-[#6366F1] inline-block"></span>
+                                <span>Energía y Sueño</span>
+                            </span>
+                            <span id="wellness-avg" class="text-[10px] text-gray-400">Promedio: —</span>
+                        </div>
+                        <!-- Lienzo interactivo de barras de lunes a sábado -->
+                        <div onclick="openWellnessModal()" title="Haz clic para registrar tus horas de sueño y nivel de energía" class="w-full sm:w-72 h-14 border-b border-l border-gray-200 relative flex items-end justify-around px-3 pb-1 bg-gray-50/40 rounded-tr-md cursor-pointer hover:bg-gray-50 transition">
+                            <span class="text-[10px] text-gray-400 absolute -left-7 top-0">190</span>
+                            <div id="wellness-bars" class="w-full h-full flex items-end justify-around gap-1.5 pt-2">
+                                <!-- Barras dinámicas o estado vacío -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ==================== TARJETA FLOTANTE: ALERTA PREDICTIVA (CONFLICTOS) ==================== -->
+    <div id="conflict-popover" class="fixed bottom-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-40 hidden w-[92vw] max-w-[340px] bg-white rounded-2xl shadow-2xl border border-gray-200 p-4 animate-in fade-in slide-in-from-bottom-3 duration-150">
+        <div class="flex items-start justify-between gap-2">
+            <div class="flex items-center gap-2">
+                <span class="w-6 h-6 rounded-full bg-[#D32F2F] text-white flex items-center justify-center shrink-0">
+                    <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+                </span>
+                <h4 class="text-xs font-extrabold text-gray-900">Alerta Predictiva</h4>
+            </div>
+            <button onclick="closeConflictPopover()" class="text-gray-400 hover:text-gray-600 p-0.5 rounded cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </div>
+        <p id="conflict-popover-desc" class="text-[11px] text-gray-600 leading-relaxed mt-2">
+            Se detectó un cruce entre tu clase de Studio y tu turno laboral Jobs. Puedes generar una Justificación Exprés o mover tu sesión a un horario libre.
+        </p>
+        <div class="mt-3 flex flex-col gap-2">
+            <button onclick="triggerExpressJustificationFromConflict()" class="w-full py-2 px-3 rounded-xl bg-[#F97316] hover:bg-[#EA580C] text-white text-xs font-bold shadow-xs transition cursor-pointer">
+                Generar Justificación Exprés
+            </button>
+            <button onclick="suggestAlternativeSlot()" class="w-full py-2 px-3 rounded-xl bg-[#00AEEF] hover:bg-[#0096CE] text-white text-xs font-bold shadow-xs transition cursor-pointer">
+                Sugerir Horario de Estudio alternativo
+            </button>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL PARA AGREGAR / EDITAR BLOQUE ==================== -->
+    <div id="block-modal" class="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 id="modal-title" class="text-sm font-bold text-gray-900">Agregar bloque al horario</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg transition cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <form id="block-form" onsubmit="saveBlock(event)" class="p-5 space-y-4">
+                <input type="hidden" id="edit-block-id">
+
+                <!-- Selector de Día y Hora -->
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Día</label>
+                        <select id="input-day" class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-[#00AEEF]">
+                            <option value="0">Lunes (Lun)</option>
+                            <option value="1">Martes (Mar)</option>
+                            <option value="2">Miércoles (Mié)</option>
+                            <option value="3">Jueves (Jue)</option>
+                            <option value="4">Viernes (Vie)</option>
+                            <option value="5">Sábado (Sáb)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-gray-700 mb-1">Franja horaria</label>
+                        <select id="input-hour" class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 bg-white focus:outline-none focus:border-[#00AEEF]">
+                            <option value="09:00">09:00</option>
+                            <option value="10:00">10:00</option>
+                            <option value="11:00">11:00</option>
+                            <option value="12:00">12:00</option>
+                            <option value="13:00">13:00</option>
+                            <option value="14:00">14:00</option>
+                            <option value="16:00">16:00</option>
+                            <option value="18:00">18:00</option>
+                            <option value="20:00">20:00</option>
+                            <option value="22:00">22:00</option>
+                            <option value="00:00">00:00</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tipo de bloque: Studio vs Jobs vs Examen -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1.5">Tipo de actividad</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="block-type" value="studio" checked class="peer sr-only" onchange="updateFormPlaceholders()">
+                            <div class="p-2 rounded-xl border-2 border-gray-200 peer-checked:border-[#18365A] peer-checked:bg-[#18365A]/5 flex items-center gap-1.5 transition">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#18365A] shrink-0"></span>
+                                <span class="text-[11px] font-bold text-gray-800">Studio</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="block-type" value="jobs" class="peer sr-only" onchange="updateFormPlaceholders()">
+                            <div class="p-2 rounded-xl border-2 border-gray-200 peer-checked:border-[#F3A258] peer-checked:bg-[#FDD2A8]/25 flex items-center gap-1.5 transition">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#FDD2A8] border border-[#F3A258] shrink-0"></span>
+                                <span class="text-[11px] font-bold text-gray-800">Jobs</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="block-type" value="exam" class="peer sr-only" onchange="updateFormPlaceholders()">
+                            <div class="p-2 rounded-xl border-2 border-gray-200 peer-checked:border-[#D32F2F] peer-checked:bg-red-50 flex items-center gap-1.5 transition">
+                                <span class="w-2.5 h-2.5 rounded-full bg-[#D32F2F] shrink-0"></span>
+                                <span class="text-[11px] font-bold text-gray-800">Examen</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Título del curso / turno -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Curso o Descripción</label>
+                    <input type="text" id="input-title" required placeholder="Ej. Metodología: Investig. Diseño" class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#00AEEF]">
+                </div>
+
+                <!-- Código NRC o Rango Horario -->
+                <div>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Código NRC / Horario / Días restantes</label>
+                    <input type="text" id="input-sub" placeholder="Ej. NRC 2396" class="w-full text-xs border border-gray-300 rounded-xl px-3 py-2 focus:outline-none focus:border-[#00AEEF]">
+                </div>
+
+                <!-- Botones del modal -->
+                <div class="pt-2 flex items-center justify-between gap-2">
+                    <button type="button" id="btn-delete-block" onclick="deleteCurrentBlock()" class="hidden px-3 py-2 rounded-xl text-xs font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer">
+                        Eliminar bloque
+                    </button>
+                    <div class="flex items-center gap-2 ml-auto">
+                        <button type="button" onclick="closeModal()" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 transition cursor-pointer">
+                            Cancelar
+                        </button>
+                        <button type="submit" class="px-4 py-2 rounded-xl bg-[#00AEEF] hover:bg-[#0096CE] text-white text-xs font-semibold shadow-xs transition cursor-pointer">
+                            Guardar bloque
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: INTEGRAR CALENDARIO EXTERNO (SCAN OCR) ==================== -->
+    <div id="ocr-modal" class="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="scan-line" class="w-4 h-4 text-[#00AEEF]"></i>
+                    <h3 class="text-sm font-bold text-gray-900">Integrar Calendario Externo (Scan OCR)</h3>
+                </div>
+                <button onclick="closeOcrModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg transition cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <div class="p-5 space-y-4">
+                <p class="text-xs text-gray-600">
+                    Importa rápidamente tus turnos laborales desde una captura de pantalla, archivo `.ics` o pega tus turnos en texto para detectarlos automáticamente.
+                </p>
+
+                <label class="flex flex-col items-center justify-center border-2 border-dashed border-[#00AEEF]/50 bg-[#E0F5FE]/20 hover:bg-[#E0F5FE]/40 rounded-xl p-4 cursor-pointer transition">
+                    <i data-lucide="upload-cloud" class="w-6 h-6 text-[#00AEEF] mb-1"></i>
+                    <span class="text-xs font-semibold text-gray-800">Subir imagen de horario laboral o archivo .ICS</span>
+                    <span id="ocr-file-status" class="text-[11px] text-gray-500 mt-0.5">PNG, JPG, PDF o ICS</span>
+                    <input type="file" class="hidden" accept=".png,.jpg,.jpeg,.pdf,.ics" onchange="simulateOcrFileUpload(this)">
+                </label>
+
+                <div class="flex items-center justify-between pt-2 border-t border-gray-100">
+                    <button type="button" onclick="importOcrPresetShifts()" class="text-xs font-semibold text-[#00AEEF] hover:underline cursor-pointer">
+                        + Importar turnos laborales de prueba
+                    </button>
+                    <button type="button" onclick="closeOcrModal()" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL: PANEL DE BIENESTAR (ENERGÍA Y SUEÑO) ==================== -->
+    <div id="wellness-modal" class="fixed inset-0 bg-black/40 backdrop-blur-[1px] z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-200 w-full max-w-md overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="text-sm font-bold text-gray-900">Registro Semanal: Energía y Sueño</h3>
+                <button onclick="closeWellnessModal()" class="text-gray-400 hover:text-gray-600 p-1 rounded-lg transition cursor-pointer">
+                    <i data-lucide="x" class="w-4 h-4"></i>
+                </button>
+            </div>
+            <form onsubmit="saveWellnessData(event)" class="p-5 space-y-3">
+                <p class="text-xs text-gray-500">Ingresa tu índice de energía/sueño (0 a 190 pts) por día de la semana:</p>
+                <div class="grid grid-cols-3 gap-2.5" id="wellness-inputs">
+                    <!-- Generado dinámicamente -->
+                </div>
+                <div class="pt-3 flex justify-end gap-2">
+                    <button type="button" onclick="closeWellnessModal()" class="px-4 py-2 rounded-xl border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50 cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-[#6366F1] hover:bg-[#4F46E5] text-white text-xs font-semibold cursor-pointer">Actualizar gráfico</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast discreto para notificaciones (sin alert()) -->
+    <div id="toast" class="fixed bottom-5 right-5 bg-gray-900 text-white text-xs font-medium px-4 py-2.5 rounded-xl shadow-lg opacity-0 pointer-events-none transition-opacity duration-200 z-50">
+    </div>
+
+    <script>
+        // Inicializar íconos Lucide
+        lucide.createIcons();
+
+        const STORAGE_KEY = 'isilnet_horario_state_v2';
+        const HOURS = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '16:00', '18:00', '20:00', '22:00', '00:00'];
+        const DAY_NAMES_FULL = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+        const DAYS_COUNT = 6;
+
+        // Estado global persistente (inicia vacío por defecto)
+        let state = {
+            activeTab: 'Modo Dual',
+            blocks: [],
+            layers: { studio: true, jobs: true },
+            justifications: [],
+            wellness: [0, 0, 0, 0, 0, 0],
+            customTexts: {
+                pageTitle: 'Mi Horario',
+                periodBadge: 'Periodo 2026-2',
+                pageSubtitle: 'Horario fijo del periodo — se repite cada semana',
+                dayHeaders: ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'],
+                wellnessTitle: 'Panel de Bienestar: Energía y Sueño',
+                wellnessSubtitle: 'Cartas de sueño en optimizados'
+            }
+        };
+
+        let activeConflict = null;
+
+        // Cargar estado desde localStorage
+        function loadState() {
+            try {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                    const parsed = JSON.parse(saved);
+                    state = { ...state, ...parsed };
+                }
+            } catch (err) {
+                console.warn('No se pudo leer localStorage:', err);
+            }
+            applyCustomTexts();
+        }
+
+        function saveState() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            } catch (err) {
+                console.warn('No se pudo guardar en localStorage:', err);
+            }
+        }
+
+        function applyCustomTexts() {
+            const t = state.customTexts;
+            if (!t) return;
+            document.getElementById('page-title').textContent = t.pageTitle;
+            document.getElementById('period-badge').textContent = t.periodBadge;
+            document.getElementById('page-subtitle').textContent = t.pageSubtitle;
+            document.getElementById('wellness-title').textContent = t.wellnessTitle;
+            document.getElementById('wellness-subtitle').textContent = t.wellnessSubtitle;
+            if (Array.isArray(t.dayHeaders)) {
+                t.dayHeaders.forEach((val, idx) => {
+                    const el = document.getElementById(`day-header-${idx}`);
+                    if (el) el.textContent = val;
+                });
+            }
+        }
+
+        function saveCustomTexts() {
+            state.customTexts = {
+                pageTitle: document.getElementById('page-title').textContent.trim(),
+                periodBadge: document.getElementById('period-badge').textContent.trim(),
+                pageSubtitle: document.getElementById('page-subtitle').textContent.trim(),
+                dayHeaders: [0, 1, 2, 3, 4, 5].map(i => document.getElementById(`day-header-${i}`).textContent.trim()),
+                wellnessTitle: document.getElementById('wellness-title').textContent.trim(),
+                wellnessSubtitle: document.getElementById('wellness-subtitle').textContent.trim()
+            };
+            saveState();
+        }
+
+        // Detectar conflictos en una celda (coincidencia de Studio y Jobs)
+        function getCellConflicts(dayIndex, hour) {
+            const cellBlocks = state.blocks.filter(b => b.day === dayIndex && b.hour === hour);
+            const studioBlock = cellBlocks.find(b => b.type === 'studio');
+            const jobsBlock = cellBlocks.find(b => b.type === 'jobs');
+            if (studioBlock && jobsBlock && state.layers.studio && state.layers.jobs) {
+                return { studioBlock, jobsBlock, dayIndex, hour };
+            }
+            return null;
+        }
+
+        function getAllConflicts() {
+            const list = [];
+            for (let d = 0; d < DAYS_COUNT; d++) {
+                HOURS.forEach(h => {
+                    const c = getCellConflicts(d, h);
+                    if (c) list.push(c);
+                });
+            }
+            return list;
+        }
+
+        // Renderizar la cuadrícula de Modo Dual
+        function renderGrid() {
+            const tbody = document.getElementById('schedule-body');
+            tbody.innerHTML = '';
+
+            HOURS.forEach(hour => {
+                const tr = document.createElement('tr');
+                tr.className = 'group';
+
+                const hourTd = document.createElement('td');
+                hourTd.className = 'py-3 px-2 border-r border-[#E5E7EB] text-[11px] font-medium text-gray-500 text-center align-top select-none bg-[#FAFAFB]/50';
+                hourTd.textContent = hour;
+                tr.appendChild(hourTd);
+
+                for (let dayIndex = 0; dayIndex < DAYS_COUNT; dayIndex++) {
+                    const td = document.createElement('td');
+                    const conflict = getCellConflicts(dayIndex, hour);
+
+                    td.className = conflict
+                        ? 'schedule-cell h-[58px] p-1.5 border-2 border-[#D32F2F] bg-[#FEE2E2]/45 align-top relative cursor-pointer transition'
+                        : 'schedule-cell h-[58px] p-1 border-r last:border-r-0 border-[#E5E7EB] align-top relative cursor-pointer hover:bg-[#F8FAFC]';
+
+                    const visibleBlocks = state.blocks.filter(b => {
+                        if (b.day !== dayIndex || b.hour !== hour) return false;
+                        if (b.type === 'studio') return state.layers.studio;
+                        if (b.type === 'jobs') return state.layers.jobs;
+                        return true; // exam
+                    });
+
+                    if (visibleBlocks.length > 0) {
+                        const stack = document.createElement('div');
+                        stack.className = 'flex flex-col gap-1';
+
+                        // Insignia roja ¡CONFLICTO DETECTADO! si coinciden Studio y Jobs
+                        if (conflict) {
+                            const alertBadge = document.createElement('button');
+                            alertBadge.type = 'button';
+                            alertBadge.className = 'w-full flex items-center justify-center gap-1 py-0.5 px-1 rounded bg-[#D32F2F] text-white text-[9px] font-extrabold tracking-tight shadow-2xs cursor-pointer';
+                            alertBadge.innerHTML = `<span>⚠ ¡CONFLICTO DETECTADO!</span>`;
+                            alertBadge.onclick = (e) => {
+                                e.stopPropagation();
+                                openConflictPopover(conflict);
+                            };
+                            stack.appendChild(alertBadge);
+                        }
+
+                        visibleBlocks.forEach(block => {
+                            const card = document.createElement('div');
+                            if (block.type === 'exam') {
+                                card.className = 'bg-white border border-gray-200 rounded-lg px-2 py-1.5 text-center shadow-2xs hover:border-[#D32F2F] transition cursor-pointer';
+                                card.innerHTML = `
+                                    <span class="text-[11px] font-semibold text-gray-700">${escapeHtml(block.title)}: </span>
+                                    <span class="text-xs font-extrabold text-[#D32F2F]">${escapeHtml(block.sub || '3')}</span>
+                                `;
+                            } else {
+                                const isStudio = block.type === 'studio';
+                                card.className = isStudio
+                                    ? 'bg-[#18365A] text-white rounded-lg p-2 text-left shadow-2xs hover:brightness-110 transition cursor-pointer'
+                                    : 'bg-[#FDD2A8] text-gray-900 rounded-lg p-2 text-left shadow-2xs hover:brightness-95 transition cursor-pointer';
+
+                                const badgeLabel = isStudio ? 'Studio' : 'Jobs';
+                                const subColor = isStudio ? 'text-gray-200' : 'text-gray-700';
+
+                                card.innerHTML = `
+                                    <div class="text-[11px] font-bold leading-tight">${badgeLabel}</div>
+                                    <div class="text-[10px] font-medium leading-snug mt-0.5 line-clamp-2">${escapeHtml(block.title)}</div>
+                                    ${block.sub ? `<div class="text-[10px] ${subColor} mt-0.5">${escapeHtml(block.sub)}</div>` : ''}
+                                `;
+                            }
+
+                            card.onclick = (e) => {
+                                e.stopPropagation();
+                                if (conflict && block.type === 'studio') {
+                                    openConflictPopover(conflict);
+                                } else {
+                                    openModal(dayIndex, hour, block.id);
+                                }
+                            };
+
+                            stack.appendChild(card);
+                        });
+
+                        td.appendChild(stack);
+                    } else {
+                        td.innerHTML = `
+                            <div class="add-hint opacity-0 w-full h-full flex items-center justify-center text-gray-300 pointer-events-none transition-opacity">
+                                <span class="text-xs font-medium">+</span>
+                            </div>
+                        `;
+                    }
+
+                    td.onclick = () => openModal(dayIndex, hour, null);
+                    tr.appendChild(td);
+                }
+
+                tbody.appendChild(tr);
+            });
+
+            // Actualizar contador y botón limpiar
+            const counter = document.getElementById('block-counter');
+            const btnClear = document.getElementById('btn-clear');
+            counter.textContent = `${state.blocks.length} ${state.blocks.length === 1 ? 'bloque activo' : 'bloques activos'}`;
+
+            if (state.blocks.length > 0) {
+                btnClear.classList.remove('hidden');
+            } else {
+                btnClear.classList.add('hidden');
+            }
+
+            renderHorarioSummary();
+            renderJustificationsView();
+            renderWellnessChart();
+        }
+
+        // ==================== RENDERIZADO VISTA 1: HORARIO ====================
+        function renderHorarioSummary() {
+            const studioBlocks = state.blocks.filter(b => b.type === 'studio');
+            const jobsBlocks = state.blocks.filter(b => b.type === 'jobs');
+            const examBlocks = state.blocks.filter(b => b.type === 'exam');
+            const conflicts = getAllConflicts();
+
+            // Cada bloque equivale a 2h académicas/laborales de franja
+            document.getElementById('stat-studio-hours').textContent = `${studioBlocks.length * 2}h`;
+            document.getElementById('stat-studio-count').textContent = `${studioBlocks.length} sesiones/sem`;
+            document.getElementById('stat-jobs-hours').textContent = `${jobsBlocks.length * 4}h`;
+            document.getElementById('stat-jobs-count').textContent = `${jobsBlocks.length} turnos/sem`;
+            document.getElementById('stat-conflicts').textContent = conflicts.length;
+
+            // Agrupar cursos únicos por título
+            const coursesMap = new Map();
+            studioBlocks.forEach(b => {
+                const key = b.title.toLowerCase();
+                if (!coursesMap.has(key)) {
+                    coursesMap.set(key, { title: b.title, sub: b.sub || 'NRC Sin asignar', sessions: [] });
+                }
+                coursesMap.get(key).sessions.push(`${DAY_NAMES_FULL[b.day]} ${b.hour}`);
+            });
+
+            document.getElementById('stat-credits').textContent = coursesMap.size * 4;
+
+            const coursesContainer = document.getElementById('enrolled-courses-list');
+            if (coursesMap.size === 0) {
+                coursesContainer.innerHTML = `
+                    <div class="py-8 text-center">
+                        <p class="text-xs text-gray-500">Aún no tienes cursos registrados en este periodo.</p>
+                        <button onclick="openModal(0, '09:00', null, 'studio')" class="mt-2 text-xs font-semibold text-[#00AEEF] hover:underline cursor-pointer">+ Registrar primer curso</button>
+                    </div>
+                `;
+            } else {
+                coursesContainer.innerHTML = Array.from(coursesMap.values()).map(c => `
+                    <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                        <div class="flex items-start gap-2.5">
+                            <span class="w-2.5 h-2.5 rounded-full bg-[#18365A] mt-1.5 shrink-0"></span>
+                            <div>
+                                <div class="text-xs font-bold text-gray-900">${escapeHtml(c.title)}</div>
+                                <div class="text-[11px] text-gray-500">${escapeHtml(c.sub)} • ${c.sessions.join(' · ')}</div>
+                            </div>
+                        </div>
+                        <span class="px-2.5 py-1 rounded-lg bg-[#E0F5FE] text-[#00AEEF] text-[10px] font-bold self-start sm:self-center">
+                            ${c.sessions.length * 2} hrs/sem
+                        </span>
+                    </div>
+                `).join('');
+            }
+
+            // Exámenes
+            const examsContainer = document.getElementById('exams-list');
+            if (examBlocks.length === 0) {
+                examsContainer.innerHTML = `
+                    <div class="p-4 rounded-xl border border-dashed border-gray-200 text-center bg-white">
+                        <p class="text-[11px] text-gray-400">Sin exámenes programados.</p>
+                    </div>
+                `;
+            } else {
+                examsContainer.innerHTML = examBlocks.map(ex => `
+                    <div class="p-3 rounded-xl bg-white border border-gray-200 flex items-center justify-between gap-2 shadow-2xs">
+                        <div>
+                            <div class="text-xs font-bold text-gray-800">${escapeHtml(ex.title)}</div>
+                            <div class="text-[10px] text-gray-500">${DAY_NAMES_FULL[ex.day]} • ${ex.hour}</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-md bg-red-50 text-[#D32F2F] text-xs font-extrabold">${escapeHtml(ex.sub || '3')} d</span>
+                            <button onclick="openModal(${ex.day}, '${ex.hour}', '${ex.id}')" class="text-gray-400 hover:text-gray-700 cursor-pointer" title="Editar examen">
+                                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            lucide.createIcons();
+        }
+
+        // ==================== RENDERIZADO VISTA 3: JUSTIFICACIONES EXPRÉS ====================
+        function renderJustificationsView() {
+            const select = document.getElementById('just-course');
+            const currentVal = select.value;
+            const studioBlocks = state.blocks.filter(b => b.type === 'studio');
+
+            select.innerHTML = '';
+            if (studioBlocks.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = 'Curso General — Periodo 2026-2';
+                opt.textContent = 'Curso General — Periodo 2026-2 (Agrega cursos en Studio)';
+                select.appendChild(opt);
+            } else {
+                const uniqueCourses = new Map();
+                studioBlocks.forEach(b => {
+                    const label = `${b.title}${b.sub ? ' (' + b.sub + ')' : ''}`;
+                    uniqueCourses.set(label, label);
+                });
+                uniqueCourses.forEach(label => {
+                    const opt = document.createElement('option');
+                    opt.value = label;
+                    opt.textContent = label;
+                    select.appendChild(opt);
+                });
+                if (currentVal && Array.from(uniqueCourses.keys()).includes(currentVal)) {
+                    select.value = currentVal;
+                }
+            }
+
+            updateJustificationPreview();
+
+            // Renderizar historial
+            const historyList = document.getElementById('just-history-list');
+            const historyCount = document.getElementById('just-history-count');
+            historyCount.textContent = `${state.justifications.length} ${state.justifications.length === 1 ? 'solicitud' : 'solicitudes'}`;
+
+            if (state.justifications.length === 0) {
+                historyList.innerHTML = `
+                    <div class="py-6 text-center text-xs text-gray-400">
+                        No hay solicitudes de Justificación Exprés registradas todavía.
+                    </div>
+                `;
+            } else {
+                historyList.innerHTML = state.justifications.map(item => {
+                    let badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                    if (item.status === 'En revisión') badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                    if (item.status === 'Borrador') badgeClass = 'bg-gray-100 text-gray-600 border-gray-200';
+
+                    return `
+                        <div class="py-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+                            <div class="space-y-0.5">
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <span class="text-[11px] font-mono font-bold text-[#00AEEF]">${item.code}</span>
+                                    <span class="text-xs font-bold text-gray-900">${escapeHtml(item.course)}</span>
+                                    <span class="px-2 py-0.5 rounded-full border text-[10px] font-semibold ${badgeClass}">${item.status}</span>
+                                </div>
+                                <div class="text-[11px] text-gray-500">
+                                    ${escapeHtml(item.datetime)} • ${escapeHtml(item.reason)} ${item.fileName ? `• 📎 ${escapeHtml(item.fileName)}` : ''}
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                                <button onclick="cycleJustificationStatus('${item.id}')" class="px-2.5 py-1 rounded-lg border border-gray-200 text-[11px] font-medium text-gray-600 hover:bg-gray-50 cursor-pointer">
+                                    Cambiar estado
+                                </button>
+                                <button onclick="deleteJustification('${item.id}')" class="p-1.5 rounded-lg text-gray-400 hover:text-red-600 hover:bg-red-50 transition cursor-pointer" title="Eliminar solicitud">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            lucide.createIcons();
+        }
+
+        function updateJustificationPreview() {
+            const course = document.getElementById('just-course').value || 'Sin curso seleccionado';
+            const dt = document.getElementById('just-datetime').value.trim() || '—';
+            const reason = document.getElementById('just-reason').value;
+            const notes = document.getElementById('just-notes').value.trim() || 'El detalle ingresado aparecerá aquí como respaldo de tu solicitud...';
+            const fileLabel = document.getElementById('just-file-label').textContent;
+
+            document.getElementById('prev-course').textContent = course;
+            document.getElementById('prev-datetime').textContent = dt;
+            document.getElementById('prev-reason').textContent = reason;
+            document.getElementById('prev-notes').textContent = notes;
+            document.getElementById('prev-file').textContent = fileLabel !== 'Seleccionar PDF / JPG...' ? fileLabel : 'Sin archivo adjunto';
+            document.getElementById('prev-code').textContent = `#JE-2026-${String(state.justifications.length + 1).padStart(3, '0')}`;
+        }
+
+        function handleJustificationFile(input) {
+            const label = document.getElementById('just-file-label');
+            if (input.files && input.files[0]) {
+                label.textContent = input.files[0].name;
+                label.classList.remove('text-gray-500');
+                label.classList.add('text-gray-900', 'font-medium');
+            } else {
+                label.textContent = 'Seleccionar PDF / JPG...';
+            }
+            updateJustificationPreview();
+        }
+
+        function submitJustification(e) {
+            e.preventDefault();
+            createJustificationRecord(true);
+        }
+
+        function saveJustificationDraft() {
+            createJustificationRecord(false);
+        }
+
+        function createJustificationRecord(isSubmitted) {
+            const course = document.getElementById('just-course').value;
+            const datetime = document.getElementById('just-datetime').value.trim() || 'Franja horaria por definir';
+            const reason = document.getElementById('just-reason').value;
+            const notes = document.getElementById('just-notes').value.trim();
+            const fileText = document.getElementById('just-file-label').textContent;
+            const fileName = fileText !== 'Seleccionar PDF / JPG...' ? fileText : '';
+
+            // Si existe un bloque Jobs en el mismo día, se aprueba automáticamente
+            const hasMatchingJobs = state.blocks.some(b => b.type === 'jobs');
+            const status = !isSubmitted ? 'Borrador' : (hasMatchingJobs ? 'Aprobada automáticamente' : 'En revisión');
+
+            state.justifications.unshift({
+                id: 'just_' + Date.now(),
+                code: `#JE-2026-${String(state.justifications.length + 1).padStart(3, '0')}`,
+                course,
+                datetime,
+                reason,
+                notes,
+                fileName,
+                status
+            });
+
+            document.getElementById('just-datetime').value = '';
+            document.getElementById('just-notes').value = '';
+            document.getElementById('just-file-label').textContent = 'Seleccionar PDF / JPG...';
+            saveState();
+            renderJustificationsView();
+            showToast(isSubmitted ? `Solicitud enviada (${status})` : 'Borrador guardado');
+        }
+
+        function cycleJustificationStatus(id) {
+            const statuses = ['Aprobada automáticamente', 'En revisión', 'Borrador'];
+            const item = state.justifications.find(j => j.id === id);
+            if (!item) return;
+            const nextIdx = (statuses.indexOf(item.status) + 1) % statuses.length;
+            item.status = statuses[nextIdx];
+            saveState();
+            renderJustificationsView();
+        }
+
+        function deleteJustification(id) {
+            state.justifications = state.justifications.filter(j => j.id !== id);
+            saveState();
+            renderJustificationsView();
+            showToast('Solicitud eliminada');
+        }
+
+        // ==================== ALERTA PREDICTIVA Y RESOLUCIÓN DE CONFLICTOS ====================
+        function openConflictPopover(conflict) {
+            activeConflict = conflict;
+            const pop = document.getElementById('conflict-popover');
+            const desc = document.getElementById('conflict-popover-desc');
+            desc.innerHTML = `Cruce detectado el <strong>${DAY_NAMES_FULL[conflict.dayIndex]} (${conflict.hour})</strong> entre <strong>${escapeHtml(conflict.studioBlock.title)}</strong> y <strong>${escapeHtml(conflict.jobsBlock.title)}</strong>.`;
+            pop.classList.remove('hidden');
+        }
+
+        function closeConflictPopover() {
+            document.getElementById('conflict-popover').classList.add('hidden');
+        }
+
+        function triggerExpressJustificationFromConflict() {
+            if (!activeConflict) return;
+            const { studioBlock, dayIndex, hour } = activeConflict;
+            closeConflictPopover();
+            switchSubTab('Justificaciones Exprés');
+
+            const courseLabel = `${studioBlock.title}${studioBlock.sub ? ' (' + studioBlock.sub + ')' : ''}`;
+            const select = document.getElementById('just-course');
+            select.value = courseLabel;
+            document.getElementById('just-datetime').value = `${DAY_NAMES_FULL[dayIndex]} — ${hour}`;
+            document.getElementById('just-reason').value = 'Cruce de turno laboral certificado';
+            document.getElementById('just-notes').value = `Cruce automático detectado en Modo Dual con el turno "${activeConflict.jobsBlock.title}".`;
+            updateJustificationPreview();
+            showToast('Datos del cruce cargados en Justificaciones Exprés');
+        }
+
+        function suggestAlternativeSlot() {
+            if (!activeConflict) return;
+            const { studioBlock, dayIndex, hour } = activeConflict;
+
+            // Buscar primera franja libre en el mismo día o siguiente
+            let foundSlot = null;
+            for (let dOffset = 0; dOffset < DAYS_COUNT && !foundSlot; dOffset++) {
+                const d = (dayIndex + dOffset) % DAYS_COUNT;
+                for (const h of HOURS) {
+                    const occupied = state.blocks.some(b => b.day === d && b.hour === h);
+                    if (!occupied) {
+                        foundSlot = { day: d, hour: h };
+                        break;
+                    }
+                }
+            }
+
+            if (foundSlot) {
+                studioBlock.day = foundSlot.day;
+                studioBlock.hour = foundSlot.hour;
+                saveState();
+                closeConflictPopover();
+                renderGrid();
+                showToast(`Sesión movida a ${DAY_NAMES_FULL[foundSlot.day]} ${foundSlot.hour} (franja libre)`);
+            } else {
+                showToast('No hay franjas libres disponibles esta semana');
+            }
+        }
+
+        // ==================== PANEL DE BIENESTAR ====================
+        function renderWellnessChart() {
+            const container = document.getElementById('wellness-bars');
+            const avgEl = document.getElementById('wellness-avg');
+            const values = state.wellness || [0, 0, 0, 0, 0, 0];
+            const hasData = values.some(v => v > 0);
+
+            if (!hasData) {
+                avgEl.textContent = 'Promedio: —';
+                container.innerHTML = `<span class="text-[10px] text-gray-300 italic w-full text-center my-auto">Haz clic para registrar energía</span>`;
+                return;
+            }
+
+            const sum = values.reduce((a, b) => a + b, 0);
+            const avg = Math.round(sum / values.length);
+            avgEl.textContent = `Promedio: ${avg}/190`;
+
+            container.innerHTML = values.map((val, i) => {
+                const pct = Math.min(100, Math.max(8, Math.round((val / 190) * 100)));
+                return `
+                    <div class="flex flex-col items-center justify-end h-full flex-1">
+                        <div class="w-full max-w-[16px] bg-[#6366F1] rounded-t-[3px] transition-all" style="height: ${val > 0 ? pct + '%' : '3px'}; opacity: ${val > 0 ? 1 : 0.25}" title="${DAY_NAMES_FULL[i]}: ${val} pts"></div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function openWellnessModal() {
+            const modal = document.getElementById('wellness-modal');
+            const container = document.getElementById('wellness-inputs');
+            container.innerHTML = DAY_NAMES_FULL.map((day, i) => `
+                <div>
+                    <label class="block text-[11px] font-semibold text-gray-600 mb-1">${day}</label>
+                    <input type="number" min="0" max="190" id="well-day-${i}" value="${state.wellness[i] || 0}" class="w-full text-xs border border-gray-300 rounded-xl px-2.5 py-1.5 focus:outline-none focus:border-[#6366F1]">
+                </div>
+            `).join('');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeWellnessModal() {
+            const modal = document.getElementById('wellness-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function saveWellnessData(e) {
+            e.preventDefault();
+            state.wellness = [0, 1, 2, 3, 4, 5].map(i => {
+                const v = parseInt(document.getElementById(`well-day-${i}`).value, 10);
+                return isNaN(v) ? 0 : Math.min(190, Math.max(0, v));
+            });
+            saveState();
+            closeWellnessModal();
+            renderWellnessChart();
+            showToast('Panel de Bienestar actualizado');
+        }
+
+        // ==================== NAVEGACIÓN ENTRE PESTAÑAS INTERNAS ====================
+        function selectSubTab(btn, name) {
+            switchSubTab(name);
+        }
+
+        function switchSubTab(name) {
+            state.activeTab = name;
+            const buttons = document.querySelectorAll('.subtab-btn');
+            buttons.forEach(el => {
+                const label = el.textContent.trim();
+                const isActive = label === name;
+                const icon = el.querySelector('svg');
+
+                if (isActive) {
+                    el.classList.add('active', 'border-[#00AEEF]/40', 'text-[#00AEEF]', 'font-semibold', 'shadow-sm');
+                    el.classList.remove('border-gray-200/90', 'text-gray-700', 'font-medium', 'shadow-2xs');
+                    if (icon) {
+                        icon.classList.remove('text-gray-500');
+                        icon.classList.add('text-[#00AEEF]');
+                    }
+                } else {
+                    el.classList.remove('active', 'border-[#00AEEF]/40', 'text-[#00AEEF]', 'font-semibold', 'shadow-sm');
+                    el.classList.add('border-gray-200/90', 'text-gray-700', 'font-medium', 'shadow-2xs');
+                    if (icon) {
+                        icon.classList.remove('text-[#00AEEF]');
+                        icon.classList.add('text-gray-500');
+                    }
+                }
+            });
+
+            document.getElementById('view-modo-dual').classList.toggle('hidden', name !== 'Modo Dual');
+            document.getElementById('view-horario').classList.toggle('hidden', name !== 'Horario');
+            document.getElementById('view-justificaciones').classList.toggle('hidden', name !== 'Justificaciones Exprés');
+
+            saveState();
+        }
+
+        // ==================== MODALES Y ACCIONES DE BLOQUES ====================
+        function toggleLayer(type) {
+            state.layers[type] = !state.layers[type];
+            syncLayerPills();
+            saveState();
+            renderGrid();
+        }
+
+        function syncLayerPills() {
+            ['studio', 'jobs'].forEach(type => {
+                const sw = document.getElementById(`switch-${type}`);
+                const knob = document.getElementById(`knob-${type}`);
+                const pill = document.getElementById(`pill-${type}`);
+                if (state.layers[type]) {
+                    sw.classList.remove('bg-gray-300');
+                    sw.classList.add('bg-[#00AEEF]');
+                    knob.classList.add('translate-x-3.5');
+                    pill.classList.remove('opacity-60');
+                } else {
+                    sw.classList.remove('bg-[#00AEEF]');
+                    sw.classList.add('bg-gray-300');
+                    knob.classList.remove('translate-x-3.5');
+                    pill.classList.add('opacity-60');
+                }
+            });
+        }
+
+        function openModal(day = 0, hour = '09:00', blockId = null, defaultType = 'studio') {
+            const modal = document.getElementById('block-modal');
+            const titleEl = document.getElementById('modal-title');
+            const idInput = document.getElementById('edit-block-id');
+            const daySelect = document.getElementById('input-day');
+            const hourSelect = document.getElementById('input-hour');
+            const titleInput = document.getElementById('input-title');
+            const subInput = document.getElementById('input-sub');
+            const deleteBtn = document.getElementById('btn-delete-block');
+
+            daySelect.value = day;
+            hourSelect.value = hour;
+
+            if (blockId) {
+                const block = state.blocks.find(b => b.id === blockId);
+                if (!block) return;
+                titleEl.textContent = 'Editar bloque del horario';
+                idInput.value = block.id;
+                document.querySelector(`input[name="block-type"][value="${block.type}"]`).checked = true;
+                titleInput.value = block.title;
+                subInput.value = block.sub || '';
+                deleteBtn.classList.remove('hidden');
+            } else {
+                titleEl.textContent = 'Agregar bloque al horario';
+                idInput.value = '';
+                document.querySelector(`input[name="block-type"][value="${defaultType}"]`).checked = true;
+                titleInput.value = defaultType === 'exam' ? 'Días para examen' : '';
+                subInput.value = defaultType === 'exam' ? '3' : '';
+                deleteBtn.classList.add('hidden');
+            }
+
+            updateFormPlaceholders();
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            setTimeout(() => titleInput.focus(), 50);
+        }
+
+        function openExamModal() {
+            openModal(5, '09:00', null, 'exam');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('block-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function updateFormPlaceholders() {
+            const type = document.querySelector('input[name="block-type"]:checked').value;
+            const titleInput = document.getElementById('input-title');
+            const subInput = document.getElementById('input-sub');
+
+            if (type === 'studio') {
+                titleInput.placeholder = 'Ej. Metodología: Investig. Diseño';
+                subInput.placeholder = 'Ej. NRC 2396';
+            } else if (type === 'jobs') {
+                titleInput.placeholder = 'Ej. Turno Trabajo: 14:00 - 22:00';
+                subInput.placeholder = 'Ej. Oficina / Remoto';
+            } else {
+                titleInput.placeholder = 'Ej. Días para examen';
+                subInput.placeholder = 'Ej. 3';
+            }
+        }
+
+        function saveBlock(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-block-id').value;
+            const day = parseInt(document.getElementById('input-day').value, 10);
+            const hour = document.getElementById('input-hour').value;
+            const type = document.querySelector('input[name="block-type"]:checked').value;
+            const title = document.getElementById('input-title').value.trim();
+            const sub = document.getElementById('input-sub').value.trim();
+
+            if (!title) return;
+
+            if (id) {
+                const index = state.blocks.findIndex(b => b.id === id);
+                if (index !== -1) {
+                    state.blocks[index] = { id, day, hour, type, title, sub };
+                }
+                showToast('Bloque actualizado');
+            } else {
+                state.blocks.push({
+                    id: 'blk_' + Date.now() + Math.random().toString(36).slice(2, 6),
+                    day,
+                    hour,
+                    type,
+                    title,
+                    sub
+                });
+                showToast('Bloque agregado al horario');
+            }
+
+            saveState();
+            closeModal();
+            renderGrid();
+        }
+
+        function deleteCurrentBlock() {
+            const id = document.getElementById('edit-block-id').value;
+            state.blocks = state.blocks.filter(b => b.id !== id);
+            saveState();
+            closeModal();
+            renderGrid();
+            showToast('Bloque eliminado');
+        }
+
+        function clearAllBlocks() {
+            state.blocks = [];
+            closeConflictPopover();
+            saveState();
+            renderGrid();
+            showToast('Cuadrícula limpiada');
+        }
+
+        function resetAllData() {
+            localStorage.removeItem(STORAGE_KEY);
+            location.reload();
+        }
+
+        // ==================== OCR Y ESCENARIO DE EJEMPLO ====================
+        function openOcrModal() {
+            const modal = document.getElementById('ocr-modal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeOcrModal() {
+            const modal = document.getElementById('ocr-modal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function simulateOcrFileUpload(input) {
+            if (!input.files || !input.files[0]) return;
+            document.getElementById('ocr-file-status').textContent = `Analizando "${input.files[0].name}"...`;
+            setTimeout(() => {
+                importOcrPresetShifts();
+                closeOcrModal();
+            }, 600);
+        }
+
+        function importOcrPresetShifts() {
+            const shifts = [
+                { id: 'ocr_1', day: 0, hour: '14:00', type: 'jobs', title: 'Turno Trabajo: 14:00 - 22:00', sub: 'Importado OCR' },
+                { id: 'ocr_2', day: 2, hour: '14:00', type: 'jobs', title: 'Turno Trabajo: 14:00 - 22:00', sub: 'Importado OCR' },
+                { id: 'ocr_3', day: 4, hour: '14:00', type: 'jobs', title: 'Turno Trabajo: 14:00 - 22:00', sub: 'Importado OCR' }
+            ];
+            state.blocks.push(...shifts);
+            saveState();
+            renderGrid();
+            showToast('3 turnos laborales importados vía Scan OCR');
+        }
+
+        function loadDemoScenario() {
+            state.blocks = [
+                { id: 'd1', day: 1, hour: '09:00', type: 'studio', title: 'Metodología: Investig. Diseño', sub: 'NRC 2396' },
+                { id: 'd2', day: 2, hour: '09:00', type: 'jobs', title: 'Turno Trabajo: 14:00 - 22:00', sub: '' },
+                { id: 'd3', day: 3, hour: '09:00', type: 'studio', title: 'Metodología: Investig. Diseño', sub: 'NRC 2396' },
+                { id: 'd4', day: 4, hour: '09:00', type: 'studio', title: 'Metodología: Investig. Diseño', sub: 'NRC 2396' },
+                { id: 'd5', day: 5, hour: '09:00', type: 'exam', title: 'Días para examen', sub: '3' },
+                { id: 'd6', day: 2, hour: '14:00', type: 'studio', title: 'Metodología: Investig. Diseño', sub: 'NRC 2396' },
+                { id: 'd7', day: 2, hour: '14:00', type: 'jobs', title: 'Turno Trabajo: 14:00 - 22:00', sub: '' },
+                { id: 'd8', day: 3, hour: '14:00', type: 'jobs', title: 'Turno Trabajo: 14:00 - 22:00', sub: '' },
+                { id: 'd9', day: 0, hour: '16:00', type: 'jobs', title: 'Turno Trabajo: 14:00 - 22:00', sub: '' }
+            ];
+            state.wellness = [145, 160, 120, 175, 165, 180];
+            saveState();
+            switchSubTab('Modo Dual');
+            renderGrid();
+            showToast('Ejemplo cargado: haz clic en ¡CONFLICTO DETECTADO!');
+        }
+
+        // Selector de idioma ES | EN
+        function setLang(lang) {
+            const btnEs = document.getElementById('lang-es');
+            const btnEn = document.getElementById('lang-en');
+            if (lang === 'ES') {
+                btnEs.className = 'px-1.5 py-0.5 rounded bg-black text-white transition';
+                btnEn.className = 'px-1.5 py-0.5 rounded text-gray-600 hover:bg-gray-100 transition';
+            } else {
+                btnEn.className = 'px-1.5 py-0.5 rounded bg-black text-white transition';
+                btnEs.className = 'px-1.5 py-0.5 rounded text-gray-600 hover:bg-gray-100 transition';
+            }
+            showToast(`Idioma: ${lang}`);
+        }
+
+        let toastTimeout;
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.classList.remove('opacity-0');
+            toast.classList.add('opacity-100');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('opacity-100');
+                toast.classList.add('opacity-0');
+            }, 2600);
+        }
+
+        function escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+                closeOcrModal();
+                closeWellnessModal();
+                closeConflictPopover();
+            }
+        });
+
+        // Inicialización
+        loadState();
+        syncLayerPills();
+        switchSubTab(state.activeTab || 'Modo Dual');
+        renderGrid();
+    </script>
+</body>
+</html>
